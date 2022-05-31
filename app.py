@@ -5,10 +5,10 @@ app = Flask(__name__)
 
 
 database = {}
-database['PEDIDOS'] = [{"id": 0, "imagem": "www.google.com", "titulo": "Relogio BIC", "quantidade": 28, "descricao": "Preto, feito em 2008"}, {
-    "id": 1, "imagem": "www.globo.com", "titulo": "Relogio DOC", "quantidade": 22, "descricao": "Vermelho, feito em 2008"}]
-database['ESTOQUE'] = [{"id": 0, "imagem": "www.google.com", "titulo": "Relogio BIC", "quantidade": 28, "descricao": "Preto, feito em 2008"}, {
-    "id": 1, "imagem": "www.globo.com", "titulo": "Relogio DOC", "quantidade": 22, "descricao": "Vermelho, feito em 2008"}]
+database['PEDIDOS'] = [{"id": 0, "imagem": "http://assets.stickpng.com/images/580b585b2edbce24c47b27bb.png", "titulo": "Relogio BIC", "quantidade": 28, "descricao": "Preto, feito em 2008"}, {
+    "id": 1, "imagem": "http://assets.stickpng.com/images/580b585b2edbce24c47b27bb.png", "titulo": "Relogio DOC", "quantidade": 22, "descricao": "Vermelho, feito em 2008"}]
+database['ESTOQUE'] = [{"id": 0, "imagem": "http://assets.stickpng.com/images/580b585b2edbce24c47b27bb.png", "titulo": "Relogio BIC", "quantidade": 28, "descricao": "Preto, feito em 2008"}, {
+    "id": 1, "imagem": "https://i.ibb.co/S6pvHwg/relogio-icon-1.png", "titulo": "Relogio DOC", "quantidade": 22, "descricao": "Vermelho, feito em 2008"}]
 
 
 def item_ok(dic):
@@ -44,6 +44,12 @@ def estoque():
 @app.route('/estoque/adicionarItemEstoque', methods=['POST'])
 def adiciona_item_estoque():
     novo_item_estoque = request.json
+    ids = [e["id"] for e in database["ESTOQUE"]]
+    if ids:
+        nid = max(ids) + 1
+    else:
+        nid = 1
+    novo_item_estoque["id"] = nid
     if not item_ok(novo_item_estoque):
         raise BadRequest
     database["ESTOQUE"].append(novo_item_estoque)
@@ -53,12 +59,12 @@ def adiciona_item_estoque():
 @app.route('/estoque/<int:id_estoque>', methods=['PUT'])
 def alterar_item_estoque(id_estoque):
     novo_item_estoque = request.json
-    if not item_ok(database["ESTOQUE"]):
+    database["ESTOQUE"].pop(id_estoque)
+    novo_item_estoque["id"] = id_estoque
+    if not item_ok(novo_item_estoque):
         raise BadRequest
-    if id_estoque not in database["ESTOQUE"]:
-        raise NOT_FOUND
-    database["ESTOQUE"][id_estoque] = novo_item_estoque
-    return database["ESTOQUE"]
+    database["ESTOQUE"].append(novo_item_estoque)
+    return jsonify(database["ESTOQUE"])
 
 
 @app.route('/estoque/<int:id_estoque>', methods=['GET'])
@@ -71,9 +77,8 @@ def localiza_item_estoque(id_estoque):
 
 @app.route('/estoque/<int:id_estoque>', methods=['DELETE'])
 def deleta_item_estoque(id_estoque):
-    if id_estoque in database["ESTOQUE"]:
-        del database["ESTOQUE"][id]
-    return database["ESTOQUE"]
+    database["ESTOQUE"].pop(id_estoque)
+    return jsonify(database['ESTOQUE'])
 
 
 @app.route('/reseta', methods=['POST'])
